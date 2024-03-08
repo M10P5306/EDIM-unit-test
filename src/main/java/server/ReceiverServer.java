@@ -1,8 +1,16 @@
 package server;
 
+import shared.User;
+import shared.UserType;
+
 import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.Map;
 
 /**
  * This class creates a thread pool and handles the communication from the Client.

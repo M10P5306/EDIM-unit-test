@@ -107,12 +107,23 @@ public class Logger implements PropertyChangeListener {
         if(evt.getPropertyName().equals("User wants activity: ")) {
             s = String.format("User %s asked for activity", evt.getNewValue());
         }
+        if(evt.getPropertyName().equals("Challenge request sent: ")) {
+            s = String.format("User %s sent challenge request to %s", evt.getOldValue(), evt.getNewValue());
+        }
+        if(evt.getPropertyName().equals("Challenge sent: ")) {
+            s = String.format("Challenge sent to both %s and %s", evt.getOldValue(), evt.getNewValue());
+        }
+        if(evt.getPropertyName().equals("Challenge denied: ")) {
+            s = String.format("Challenge from %s denied by %s", evt.getOldValue(), evt.getNewValue());
+        }
+
 
         if (s != null) {
             currEvent.setEvent(s);
             eventLog.add(currEvent);
             writeToFile();
         }
+
     }
 }
 

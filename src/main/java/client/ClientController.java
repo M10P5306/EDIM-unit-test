@@ -1,7 +1,9 @@
 package client;
 
-import client.gui.MainFrame;
 import shared.Activity;
+
+
+import client.gui.MainFrame;
 import shared.ActivityRegister;
 import shared.User;
 import shared.UserType;
@@ -158,14 +160,41 @@ public class ClientController {
             if (user.getUserType() == UserType.LOGOUT) {
                 System.out.println("Vi kom in i receiveObject och ville disconnecta från server");
                 ccc.disconnect();
+            } else if (user.getUserType() == UserType.SENDCHALLENGEREQUEST) {
+                boolean userAccepts = mainFrame.showChallengeRequest(user);
+
+                if(userAccepts) {
+                    sendChallengeToBothChallengers();
+                } else {
+                    sendChallengeDenyMessage();
+                }
+            } else if (user.getUserType() == UserType.CHALLENGEDENIED) {
+                mainFrame.disposeWaitingWindow();
+                mainFrame.showChallengeDeniedMessage();
             }
         } else if (object instanceof Activity) {
             Activity activity = (Activity) object;
+            if(activity.getIsChallenge()) {
+                System.out.println("### ClientController - user: " + activity.getActivityUser());
+                System.out.println("+++ Test Variable: " + activity.getTestVariable());
+                mainFrame.disposeWaitingWindow();
+            }
             receiveNotificationFromCCC(activity);
         } else if (object instanceof ArrayList<?>) {
             ArrayList<String> usersOnline = (ArrayList<String>) object;
             updateOnlineList(usersOnline);
         }
+    }
+
+    private void sendChallengeDenyMessage() {
+        user.setUserType(UserType.CHALLENGEDENIED);
+        ccc.sendObject(user);
+    }
+
+    private void sendChallengeToBothChallengers() {
+        user.setUserType(UserType.SENDCHALLENGE);
+        ccc.sendObject(user);
+        System.out.println("Challenge was accepted");
     }
 
     /**
@@ -200,8 +229,18 @@ public class ClientController {
         return this.user;
     }
 
-    public void setMainFrame(MainFrame mainFrame) {
-        this.mainFrame = mainFrame;
+
+    public void sendChallengeRequestToUser(String usernameToChallenge) {
+        System.out.println("CHECKPOINT 1 - sending: " + this.user.getUsername());
+
+
+        this.user.setUsernameToChallenge(usernameToChallenge);
+        this.user.setUserType(UserType.SENDCHALLENGEREQUEST);
+
+        ccc.sendObject(user);
+    }
+    public void setMainFrame(MainFrame mf) {
+        this.mainFrame = mf;
     }
 
 }

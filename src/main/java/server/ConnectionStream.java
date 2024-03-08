@@ -7,6 +7,7 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
+import java.util.ArrayList;
 
 public class ConnectionStream extends Thread {
     private ServerController serverController;
@@ -51,10 +52,16 @@ public class ConnectionStream extends Thread {
     public void run() {
         while (running) {
             try {
+
                 Object object = ois.readObject();
+                if(object == null){
+                    System.out.println("Object is null");
+                }
                 System.out.println("CS: mottagit ett objekt: " + object.getClass());  //TODO: Test - ta bort
 
                 if (object instanceof User) {
+                    System.out.println("CHECKPOINT 3.5");
+
                     User user = (User) object;
                     UserType userType = user.getUserType();
                     String userName = user.getUsername();
@@ -74,6 +81,7 @@ public class ConnectionStream extends Thread {
                             break;
                     }
                 }
+                System.out.println("CHECKPOINT 5");
                 serverController.receiveObject(object);
 
             } catch (IOException | ClassNotFoundException e) {

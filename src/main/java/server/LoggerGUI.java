@@ -1,6 +1,7 @@
 package server;
 
 import javax.swing.*;
+import javax.swing.border.Border;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -134,34 +135,34 @@ public class LoggerGUI extends JFrame implements PropertyChangeListener {
         }
     }
 
-    public DefaultListModel<String> getDefaultListModel() {
-        return defaultListModel;
-    }
-
     class ButtonListener implements ActionListener {
 
         public void actionPerformed(ActionEvent e) {
             if (e.getSource() == setStart) {
                 String input = JOptionPane.showInputDialog(null, "Start interval (yyyy-mm-dd HH:mm");
-                if (input != null && !input.equals("")) {
+                if (input != null && !input.isEmpty()) {
                     DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
                     try {
                         start = LocalDateTime.parse(input, formatter);
                     } catch (DateTimeParseException ex) {
+                        JOptionPane.showMessageDialog(null, "Wrong format, please enter the following format: yyyy-MM-dd HH:mm");
                         start = null;
                     }
-                } else {
+                } else if (input != null) {
+                    JOptionPane.showMessageDialog(null, "No input, please enter the following format: yyyy-MM-dd HH:mm");
                     start = null;
                 }
             }
+
             if (e.getSource() == setEnd) {
                 String input = JOptionPane.showInputDialog(null, "End interval (yyyy-mm-dd HH:mm)");
-                if (input != null && !input.equals("")) {
+                if (input != null && !input.isEmpty()) {
                     DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
                     try {
                         end = LocalDateTime.parse(input, formatter);
                         autoRefresh.stop();
                     } catch (DateTimeParseException ex) {
+                        JOptionPane.showMessageDialog(null, "Wrong format, please enter the following format: yyyy-MM-dd HH:mm");
                         end = null;
                         if (autoRefresh != null) {
                             autoRefresh.stop();
@@ -170,7 +171,8 @@ public class LoggerGUI extends JFrame implements PropertyChangeListener {
                         autoRefresh = new Timer(1000, this);
                         autoRefresh.start();
                     }
-                } else {
+                } else if (input != null) {
+                    JOptionPane.showMessageDialog(null, "No input, please enter the following format: yyyy-MM-dd HH:mm");
                     end = null;
 
                     if (autoRefresh != null) {
@@ -184,7 +186,28 @@ public class LoggerGUI extends JFrame implements PropertyChangeListener {
             }
 
             if (e.getSource() == search) {
-                controller.callSearchLogger(start, end);
+                if (start == null && end == null) {
+                    JOptionPane.showMessageDialog(null, "Both Start and End are empty");
+                    controller.callSearchLogger(null, null);
+                    autoRefresh.start();
+                } else if (start == null || end == null) {
+                    JOptionPane.showMessageDialog(null, "No input in either Start or End, please enter the following format: yyyy-MM-dd HH:mm", "Error", JOptionPane.ERROR_MESSAGE);
+                } else if(start.isAfter(end)) {
+                    JOptionPane.showMessageDialog(null, "Please make sure the start date is earlier than the end date.", "Error", JOptionPane.ERROR_MESSAGE);
+                }
+                else {
+                    DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
+                    String startFormatted = start.format(formatter);
+                    String endFormatted = end.format(formatter);
+
+                    String message = String.format("Searching between %s and %s", startFormatted, endFormatted);
+                    JOptionPane.showMessageDialog(null, message);
+                    controller.callSearchLogger(start, end);
+                    start = null;
+                    end = null;
+
+                    autoRefresh.start();
+                }
             }
 
             if (e.getSource() == autoRefresh) {
@@ -192,6 +215,10 @@ public class LoggerGUI extends JFrame implements PropertyChangeListener {
             }
 
         }
+    }
+
+    public DefaultListModel<String> getDefaultListModel() {
+        return defaultListModel;
     }
 
 }

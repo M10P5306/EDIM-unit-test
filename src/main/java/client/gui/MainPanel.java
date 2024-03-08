@@ -1,8 +1,11 @@
 package client.gui;
 
 import shared.Activity;
+import shared.User;
 
 import javax.swing.*;
+import javax.swing.border.AbstractBorder;
+import javax.swing.border.Border;
 import javax.swing.border.TitledBorder;
 import java.awt.*;
 
@@ -15,6 +18,7 @@ public class MainPanel extends JPanel {
     private AppPanel appPanel;
     private String userName;
     private Color backGroundColor;
+
     private String title;
 
     public MainPanel(MainFrame mainFrame, String userName, String status) {
@@ -29,8 +33,8 @@ public class MainPanel extends JPanel {
     public void setupPanel(String status) {
         setSize(new Dimension(819, 438));
         setBackground(backGroundColor);
-        title = "Välkommen, " + userName + " - " + status;
-        TitledBorder tb = BorderFactory.createTitledBorder(title);
+        TitledBorder tb = BorderFactory.createTitledBorder("Välkommen, " + userName + " - " + status);
+        this.title = tb.getTitle();
         if (status.equals("OFFLINE")) {
             tb.setTitleColor(Color.RED);
         } else {
@@ -63,7 +67,28 @@ public class MainPanel extends JPanel {
         return mainFrame;
     }
 
-    public String getTitle(){
-        return title;
+    public void sendChallengeRequestToUser(String usernameToChallenge) {
+        mainFrame.sendChallengeRequestToUser(usernameToChallenge);
+    }
+
+    public boolean showChallengeRequest(User user) {
+        return appPanel.showChallengeRequest(user);
+    }
+
+    public void disposeWaitingWindow() {
+        appPanel.disposeWaitingWindow();
+    }
+
+    public void showChallengeDeniedMessage() {
+        appPanel.showChallengeDeniedMessage();
+    }
+
+
+    public String getUserName() {
+        return mainFrame.getUserName();
+    }
+
+    public String getTitle() {
+        return this.title;
     }
 }

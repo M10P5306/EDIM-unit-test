@@ -1,9 +1,8 @@
 package shared;
 
-import java.io.BufferedReader;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStreamReader;
+import shared.Activity;
+
+import java.io.*;
 import java.util.LinkedList;
 
 /**

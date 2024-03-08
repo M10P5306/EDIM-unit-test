@@ -2,15 +2,12 @@ package server;
 
 import shared.*;
 
-import java.beans.PropertyChangeListener;
-import java.beans.PropertyChangeSupport;
 import java.io.*;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.Random;
+import java.util.*;
+import java.beans.PropertyChangeListener;
+import java.beans.PropertyChangeSupport;
 
 /**
  * This class handles the logic of the in and out coming objects from the clients.
@@ -31,7 +28,6 @@ public class ServerController {
     private LoggerGUI loggerGUI;
     private ArrayList<String> usersOnline;
 
-
     public ServerController() {
         socketHashMap = new HashMap();
         userRegister = new UserRegister();
@@ -44,6 +40,8 @@ public class ServerController {
         loggerGUI = new LoggerGUI(this);
         callSearchLogger(null, null);
     }
+
+
     /**
      * Constructs all the buffers and servers and HashMaps that is needed.
      *
@@ -67,7 +65,7 @@ public class ServerController {
         changeSupport.addPropertyChangeListener(pcl);
     }
 
-    public ArrayList<String> callSearchLogger(LocalDateTime startTime, LocalDateTime endTime) {
+    public LinkedList<LogEvent> callSearchLogger(LocalDateTime startTime, LocalDateTime endTime) {
         LinkedList<LogEvent> logs = log.searchLogs(startTime, endTime);
         ArrayList<String> formattedStrings = new ArrayList<>();
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
@@ -75,7 +73,7 @@ public class ServerController {
             formattedStrings.add(String.format("[%s] %s", log.getTime().format(formatter), log.getEvent()));
         }
         loggerGUI.listLog(formattedStrings.toArray());
-        return formattedStrings;
+        return logs;
     }
 
     /**
@@ -169,11 +167,11 @@ public class ServerController {
         socketHashMap.get(username).sendObject(activityToSend);
         System.out.println("Sending activity: " + activityToSend.getActivityName());  //TODO: Test - ta bort
         changeSupport.firePropertyChange("Sending activity: ", activityToSend.getActivityName(), username);
-
     }
 
     public void receiveObject(Object object) {
         if (object instanceof User) {
+            System.out.println("CHECKPOINT 6");
             User user = (User) object;
             String userName = user.getUsername();
             UserType userType = user.getUserType();
@@ -219,24 +217,79 @@ public class ServerController {
                     else {
                         changeSupport.firePropertyChange("User interval: ", userName,  " want an activity now");
                     }
-
                     break;
                 case WANTACTIVITY:
+                    System.out.println("TEST CHECKPOINT");
                     changeSupport.firePropertyChange("User wants activity: ", null, userName);
                     sendActivity(userName);
+                    break;
+                case SENDCHALLENGEREQUEST:
+                    System.out.println("CHECKPOINT 7");
+                    System.out.println("User wants to send challenge request");
+                    User userToSend = (User)object;
+                    String usernameToChallenge = user.getUsernameToChallenge();
+                    changeSupport.firePropertyChange("Challenge request sent: ", userToSend.getUsername(),  usernameToChallenge);
+                    sendChallengeRequest(userToSend);
+                    break;
+                case SENDCHALLENGE:
+                    changeSupport.firePropertyChange("Challenge sent: ", user.getUsername(),  user.getUsernameToChallenge());
+                    sendChallengeToUsers(user);
+                    break;
+                case CHALLENGEDENIED:
+                    sendChallengeDeniedToChallengingUser(user);
+                    changeSupport.firePropertyChange("Challenge denied: ", user.getUsername(),  user.getUsernameToChallenge());
                     break;
             }
         } else if (object instanceof Activity) {
             Activity activity = (Activity) object;
             String username = activity.getActivityUser();
 
+            System.out.println("#2 - activityToChallengedUser.getActivityUser: " + username);
+
             if (activity.isCompleted()) {
                 changeSupport.firePropertyChange("Activity completed: ", username, activity.getActivityName());
             } else {
                 changeSupport.firePropertyChange("Activity delayed: ", username, activity.getActivityName());
             }
+        } else {
+            System.out.println("CHECKPOINT 8");
         }
 
+    }
+
+    private void sendChallengeDeniedToChallengingUser(User user) {
+        socketHashMap.get(user.getUsername()).sendObject(user);
+    }
+
+    private void sendChallengeToUsers(User user) {
+        String client1 = user.getUsername();
+        String client2 = user.getUsernameToChallenge();
+
+        System.out.println("+++ client1: " + client1);
+        System.out.println("+++ client2: " + client2);
+
+        int nbrOfActivities = activityRegister.getActivityRegister().size();
+        int activityNbr = rand.nextInt(nbrOfActivities);
+
+        Activity activity1 = activityRegister.getActivityRegister().get(activityNbr);
+        activity1.setActivityUser(client1);
+        activity1.setIsChallenge(true);
+
+        sendActivityToSpecificUser(client1, activity1);
+
+        Activity activity2 = activityRegister.getActivityRegister().get(activityNbr);
+        activity2.setActivityUser(client2);
+        activity2.setIsChallenge(true);
+
+        sendActivityToSpecificUser(client2, activity2);
+
+        changeSupport.firePropertyChange("Sending activity: ", activity1.getActivityName(), client1);
+        changeSupport.firePropertyChange("Sending activity: ", activity2.getActivityName(), client2);
+    }
+
+    public void sendActivityToSpecificUser(String username, Activity activity){
+        System.out.println("sendActivityToSpecificUser, username: " + username);
+        socketHashMap.get(username).sendObject(activity);
     }
 
     public void addNewConnection(String userName, ConnectionStream connectionStream) {
@@ -251,6 +304,12 @@ public class ServerController {
     public synchronized void logOutUser(String username) {
         socketHashMap.remove(username);
         System.out.println("User logged out: " + username);  //TODO: Test - ta bort
+    }
+
+    public void sendChallengeRequest(User userToSend){
+        socketHashMap.get(userToSend.getUsernameToChallenge()).sendObject(userToSend);
+        //changeSupport.firePropertyChange("Sending challenge request to: ", null, userToSend.getUsernameToChallenge());
+        System.out.println("Sending challenge request from: " + userToSend.getUsername() + " to: " + userToSend.getUsernameToChallenge());
     }
 
     public PropertyChangeSupport getChangeSupport() {

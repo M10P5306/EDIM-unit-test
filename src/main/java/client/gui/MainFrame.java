@@ -2,6 +2,7 @@ package client.gui;
 
 import client.ClientController;
 import shared.Activity;
+import shared.User;
 
 import javax.swing.*;
 import java.awt.event.WindowAdapter;
@@ -51,7 +52,7 @@ public class MainFrame extends JFrame {
      * Sets up the main frame for the GUI.
      */
     public void setupFrame() {
-        setBounds(0, 0, 819, 438);
+        setBounds(0, 0, 900, 438);
         addWindowListener(new WindowAdapter() {
             public void windowClosing(WindowEvent we) {
                 clientController.logOut();
@@ -147,5 +148,23 @@ public class MainFrame extends JFrame {
     }
 
 
+    public void sendChallengeRequestToUser(String usernameToChallenge) {
+        clientController.sendChallengeRequestToUser(usernameToChallenge);
+    }
 
+    public boolean showChallengeRequest(User user) {
+        return mainPanel.showChallengeRequest(user);
+    }
+
+    public void disposeWaitingWindow() {
+        mainPanel.disposeWaitingWindow();
+    }
+
+    public void showChallengeDeniedMessage() {
+        mainPanel.showChallengeDeniedMessage();
+    }
+
+    public String getUserName() {
+        return userName;
+    }
 }

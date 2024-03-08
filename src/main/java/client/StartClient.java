@@ -9,5 +9,6 @@ public class StartClient {
 
     public static void main(String[] args) {
      ClientController client = new ClientController();
+     ClientController client2 = new ClientController();
     }
 }

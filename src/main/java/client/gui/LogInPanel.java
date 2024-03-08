@@ -83,7 +83,8 @@ public class LogInPanel extends JPanel {
         }
     }
 
-    public void setTfUserName(JTextField tfUserName) {
-        this.tfUserName = tfUserName;
+    public void setTfUserName(JTextField jtf) {
+        this.tfUserName = jtf;
     }
+
 }

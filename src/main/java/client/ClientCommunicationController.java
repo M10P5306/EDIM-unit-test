@@ -1,5 +1,6 @@
 package client;
 
+import shared.Activity;
 import shared.User;
 import shared.UserType;
 
@@ -7,6 +8,7 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
+import java.util.ArrayList;
 
 /**
  * Requirement: K.G.2
@@ -64,11 +66,10 @@ public class ClientCommunicationController {
     public void disconnect() {
         System.out.println("Disconnecting");
         try {
-            Thread.sleep(1000);
             oos.close();
             socket.close();
             System.out.println("CCC: Socket stängd. User: " + clientController.getUser().getUsername());
-        } catch (InterruptedException | IOException e) {
+        } catch (IOException e) {
             e.printStackTrace();
         }
     }
@@ -80,9 +81,20 @@ public class ClientCommunicationController {
      */
 
     public boolean sendObject(Object object) {
+        String printOut;
+        if(object instanceof User) {
+            printOut = ((User) object).getUsername();
+        } else {
+            printOut = "bajs";
+        }
+
+
         try {
+            System.out.println("CHECKPOINT 2");
             if (oos != null) {
                 oos.writeUnshared(object);
+                System.out.println("CHECKPOINT 3");
+                System.out.println("CHECKPOINT OBJECT: " + printOut);
                 oos.flush();
                 return true;
             }

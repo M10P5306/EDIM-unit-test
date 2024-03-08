@@ -1,6 +1,7 @@
 package client.gui;
 
 import shared.Activity;
+import shared.User;
 
 import javax.swing.*;
 import javax.swing.border.BevelBorder;
@@ -9,6 +10,8 @@ import javax.swing.event.ListSelectionListener;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.Timer;
@@ -49,6 +52,7 @@ public class AppPanel extends JPanel {
 
     private DefaultListModel onlineUserListModel;
     private JList onlineList;
+    private JDialog waitingWindow;
 
     public AppPanel(MainPanel mainPanel) {
         this.mainPanel = mainPanel;
@@ -76,7 +80,6 @@ public class AppPanel extends JPanel {
         activityScrollPane.setPreferredSize(new Dimension(430, 330));
         activityScrollPane.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS);
 
-
         add(activityScrollPane, BorderLayout.CENTER);
         add(btnLogOut, BorderLayout.SOUTH);
         add(taActivityInfo, BorderLayout.EAST);
@@ -99,7 +102,7 @@ public class AppPanel extends JPanel {
         centerPnl.setSize(new Dimension(intervalPnl.getWidth(), intervalPnl.getHeight()));
         centerPnl.setBackground(clrPanels);
         updateLblInterval();
-        btnInterval = new JButton("Ändra intervall");
+        btnInterval = new JButton("Ändra tidsintervall");
         startTimer(Integer.parseInt((String) cmbTimeLimit.getSelectedItem()), 59);
         centerPnl.setLayout(new BorderLayout());
 
@@ -123,6 +126,7 @@ public class AppPanel extends JPanel {
         onlineList.setFont(font);
         onlineList.setBorder(BorderFactory.createTitledBorder("Online: "));
         onlineList.setVisible(true);
+        addOnlineListMouseListener();
 
         JScrollPane onlineScrollPane = new JScrollPane(onlineList);
 
@@ -131,6 +135,56 @@ public class AppPanel extends JPanel {
         intervalPnl.add(centerPnl, BorderLayout.CENTER);
         intervalPnl.add(lblTimerInfo, BorderLayout.SOUTH);
     }
+
+    public void addOnlineListMouseListener() {
+        onlineList.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                if (e.getClickCount() == 2) {
+                    int index = onlineList.locationToIndex(e.getPoint());
+                    if (index >= 0) {
+                        ListModel localOnlineListModel = onlineList.getModel();
+                        Object item = localOnlineListModel.getElementAt(index);
+                        showUserChallengeOptions(item.toString());
+                    }
+                }
+            }
+        });
+    }
+
+    public void showUserChallengeOptions(String usernameToChallenge) {
+        SwingUtilities.invokeLater(() -> {
+            int response = JOptionPane.showConfirmDialog(null, "Vill du utmana " + usernameToChallenge + "?", "Utmana Användare", JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE);
+            if (response == JOptionPane.YES_OPTION) {
+                System.out.println("Användaren valde Ja för att utmana " + usernameToChallenge);
+                showWaitingWindow();
+                mainPanel.sendChallengeRequestToUser(usernameToChallenge);
+            }
+        });
+    }
+
+    public void showWaitingWindow() {
+            waitingWindow = new JDialog();
+            waitingWindow.setTitle("Väntar...");
+            waitingWindow.setDefaultCloseOperation(JDialog.DO_NOTHING_ON_CLOSE);
+
+            JLabel label = new JLabel("Väntar", JLabel.CENTER);
+            JPanel panel = new JPanel();
+            panel.add(label);
+            waitingWindow.add(panel);
+
+            waitingWindow.setSize(200, 100);
+            waitingWindow.setLocationRelativeTo(null);
+            waitingWindow.setModal(false);
+            waitingWindow.setVisible(true);
+    }
+
+    public void disposeWaitingWindow() {
+        if(waitingWindow != null) {
+            waitingWindow.dispose();
+        }
+    }
+
 
     public void updateLblInterval() {
         int interval;
@@ -151,6 +205,34 @@ public class AppPanel extends JPanel {
         interval = new String[]{"Nu", "5", "15", "30", "45", "60"};
         cmbTimeLimit = new JComboBox<>(interval);
         cmbTimeLimit.setSelectedIndex(3);
+
+        cmbTimeLimit.setRenderer(new ListCellRenderer<String>() {
+            private final JLabel label = new JLabel();
+
+            @Override
+            public Component getListCellRendererComponent(JList<? extends String> list, String value, int index,
+                                                          boolean isSelected, boolean cellHasFocus) {
+                // Append " min" to the numeric values, but not to "Nu"
+                if (!value.equals("Nu")) {
+                    label.setText(value + " min");
+                } else {
+                    label.setText(value);
+                }
+
+                // Handle selection highlighting
+                if (isSelected) {
+                    label.setBackground(list.getSelectionBackground());
+                    label.setForeground(list.getSelectionForeground());
+                    label.setOpaque(true);
+                } else {
+                    label.setBackground(list.getBackground());
+                    label.setForeground(list.getForeground());
+                    label.setOpaque(false);
+                }
+
+                return label;
+            }
+        });
     }
 
     /**
@@ -246,7 +328,7 @@ public class AppPanel extends JPanel {
     public void createActivityList() {
         activityListModel = new DefaultListModel();
         activityList = new JList<>(activityListModel);
-        activityList.setPreferredSize(new Dimension(400, 320));
+        activityList.setPreferredSize(new Dimension(400, 1000));
         activityList.setBorder(BorderFactory.createTitledBorder("Avklarade aktiviteter"));
         activityList.setSelectionMode(DefaultListSelectionModel.SINGLE_SELECTION);
         Font font = new Font("SansSerif", Font.PLAIN, 14);
@@ -280,7 +362,7 @@ public class AppPanel extends JPanel {
      *
      * @param activity
      */
-    public LinkedList updateActivityList(Activity activity) {
+    public LinkedList<Activity> updateActivityList(Activity activity) {
         stopTimer();
         int timerValue;
         if (cmbTimeLimit.getSelectedItem().equals("Nu")) {
@@ -293,10 +375,12 @@ public class AppPanel extends JPanel {
         }
         startTimer(timerValue - 1, 59);
         activities.add(activity);
+
         activityListModel.addElement(activity.getActivityName() + " " + activity.getTime());
         String newActivityName = splitActivityNameAndTime(activity.getActivityName());
         activity.setActivityName(newActivityName);
         updateUI();
+
         return activities;
     }
 
@@ -347,23 +431,41 @@ public class AppPanel extends JPanel {
 
         JFrame frame = new JFrame();
         frame.setAlwaysOnTop(true);
-        LinkedList<Activity> testPurpose = null;
 
-        int answer = welcomePane.showOptionDialog(frame, instructions, activity.getActivityName(),
-                JOptionPane.OK_CANCEL_OPTION, JOptionPane.INFORMATION_MESSAGE, activityIcon, buttons, buttons[0]);
-        if (answer == 0) {
-            activity.setCompleted(true);
-            mainPanel.getMainFrame().getClientController().getUser().setDelayedActivity(null);
-            mainPanel.sendActivityFromGUI(activity);
-            testPurpose = updateActivityList(activity);
-        } else {
-            stopTimer();
-            startTimer(4, 59);
-            activity.setCompleted(false);
-            mainPanel.getMainFrame().getClientController().getUser().setDelayedActivity(activity);
-            mainPanel.sendActivityFromGUI(activity);
+        int answer = -1;
+
+        while (answer == -1) {
+            answer = welcomePane.showOptionDialog(frame, instructions, mainPanel.getUserName(),
+                    JOptionPane.OK_CANCEL_OPTION, JOptionPane.INFORMATION_MESSAGE, activityIcon, buttons, buttons[0]);
+            if (answer == 0) {
+                activity.setCompleted(true);
+                mainPanel.getMainFrame().getClientController().getUser().setDelayedActivity(null);
+                mainPanel.sendActivityFromGUI(activity);
+                updateActivityList(activity);
+
+                String activityUser = activity.getActivityUser();
+                System.out.println("#3 activity.getActivityUser(): " + activityUser);
+            } else if(answer == -1) {
+                JOptionPane.showMessageDialog(null, "Du måste antingen skjuta upp aktiviteten i fem minuter eller bekräfta att du utfört aktiviteten");
+            } else {
+                stopTimer();
+                startTimer(4, 59);
+                activity.setCompleted(false);
+                mainPanel.getMainFrame().getClientController().getUser().setDelayedActivity(activity);
+                mainPanel.sendActivityFromGUI(activity);
+            }
         }
-        return testPurpose;
+        return activities;
+    }
+
+    public boolean showChallengeRequest(User user) {
+        String myUsername = mainPanel.getUserName();
+            int response = JOptionPane.showConfirmDialog(null, "Du ("+myUsername+") har blivit utmanad av "+ user.getUsername() + ", accepterar du?", "Du har blivit utmanad", JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE);
+        return response == JOptionPane.YES_OPTION;
+    }
+
+    public void showChallengeDeniedMessage() {
+        JOptionPane.showMessageDialog(null, "Användaren har tackat nej till utmaningen.", "Information", JOptionPane.INFORMATION_MESSAGE);
     }
 
 
@@ -417,5 +519,6 @@ public class AppPanel extends JPanel {
             }
         }
     }
+
 
 }

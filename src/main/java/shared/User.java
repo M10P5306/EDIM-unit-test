@@ -17,6 +17,7 @@ public class User implements Serializable {
      private int notificationInterval = 45;
     private UserType userType;
     private Activity delayedActivity;
+    private String usernameToChallenge;
 
     public User(String username) {
         this.username = username;
@@ -31,12 +32,24 @@ public class User implements Serializable {
         completedActivities.add(activity);
     }
 
+    public void setCompletedActivities(LinkedList<Activity> completedActivities) {
+        this.completedActivities = completedActivities;
+    }
+
     public String getUsername() {
         return username;
     }
 
     public void setUsername(String username) {
         this.username = username;
+    }
+
+    public String getUsernameToChallenge() {
+        return usernameToChallenge;
+    }
+
+    public void setUsernameToChallenge(String usernameToChallenge) {
+        this.usernameToChallenge = usernameToChallenge;
     }
 
     public int getNotificationInterval() {

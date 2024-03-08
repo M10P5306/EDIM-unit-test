@@ -2,7 +2,9 @@ package shared;
 
 import javax.swing.*;
 import java.io.Serializable;
+import java.time.LocalDateTime;
 import java.util.Calendar;
+import java.util.Date;
 
 
 /**
@@ -20,6 +22,9 @@ public class Activity implements Serializable {
     private boolean isCompleted = false;
     private String activityUser;
     private ImageIcon activityImage;
+    private boolean isChallenge;
+    //Delete testVariable and method later
+    private String testVariable;
 
     public Activity() {
     }
@@ -50,6 +55,14 @@ public class Activity implements Serializable {
 
     public String getActivityInfo() {
         return activityInfo;
+    }
+
+    public void setIsChallenge(boolean isChallenge) {
+        this.isChallenge = isChallenge;
+    }
+
+    public boolean getIsChallenge() {
+        return isChallenge;
     }
 
     public void setActivityInfo(String activityInfo) {
@@ -110,6 +123,14 @@ public class Activity implements Serializable {
      */
     public void createActivityImage(String fileName) {
         activityImage = new ImageIcon(fileName);
+    }
+
+    public void setTestVariable(String testVariable) {
+        this.testVariable = testVariable;
+    }
+
+    public String getTestVariable() {
+        return testVariable;
     }
 }
 
