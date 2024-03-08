@@ -134,6 +134,10 @@ public class LoggerGUI extends JFrame implements PropertyChangeListener {
         }
     }
 
+    public DefaultListModel<String> getDefaultListModel() {
+        return defaultListModel;
+    }
+
     class ButtonListener implements ActionListener {
 
         public void actionPerformed(ActionEvent e) {

@@ -25,20 +25,31 @@ public class ServerController {
     private UserRegister userRegister;
     private ActivityRegister activityRegister;
     private Random rand;
-    private Buffer<Object> receiveBuffer;
     private String userFilePath = "files/users.dat";
     private Logger log;
     private PropertyChangeSupport changeSupport;
     private LoggerGUI loggerGUI;
     private ArrayList<String> usersOnline;
 
+
+    public ServerController() {
+        socketHashMap = new HashMap();
+        userRegister = new UserRegister();
+        usersOnline = new ArrayList<>();
+        readUsers(userFilePath);
+        activityRegister = new ActivityRegister("files/activities.txt");
+        rand = new Random();
+        this.changeSupport = new PropertyChangeSupport(this);
+        log = new Logger(this);
+        loggerGUI = new LoggerGUI(this);
+        callSearchLogger(null, null);
+    }
     /**
      * Constructs all the buffers and servers and HashMaps that is needed.
      *
      * @param port the received port number.
      */
     public ServerController(int port) {
-        receiveBuffer = new Buffer<>();
         socketHashMap = new HashMap();
         receiverServer = new ReceiverServer(port, this);
         userRegister = new UserRegister();
@@ -56,7 +67,7 @@ public class ServerController {
         changeSupport.addPropertyChangeListener(pcl);
     }
 
-    public void callSearchLogger(LocalDateTime startTime, LocalDateTime endTime) {
+    public ArrayList<String> callSearchLogger(LocalDateTime startTime, LocalDateTime endTime) {
         LinkedList<LogEvent> logs = log.searchLogs(startTime, endTime);
         ArrayList<String> formattedStrings = new ArrayList<>();
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
@@ -64,6 +75,7 @@ public class ServerController {
             formattedStrings.add(String.format("[%s] %s", log.getTime().format(formatter), log.getEvent()));
         }
         loggerGUI.listLog(formattedStrings.toArray());
+        return formattedStrings;
     }
 
     /**
@@ -241,4 +253,11 @@ public class ServerController {
         System.out.println("User logged out: " + username);  //TODO: Test - ta bort
     }
 
+    public PropertyChangeSupport getChangeSupport() {
+        return changeSupport;
+    }
+
+    public HashMap getSocketHashMap() {
+        return socketHashMap;
+    }
 }

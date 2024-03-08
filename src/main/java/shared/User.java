@@ -31,10 +31,6 @@ public class User implements Serializable {
         completedActivities.add(activity);
     }
 
-    public void setCompletedActivities(LinkedList<Activity> completedActivities) {
-        this.completedActivities = completedActivities;
-    }
-
     public String getUsername() {
         return username;
     }

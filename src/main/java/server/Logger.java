@@ -90,7 +90,7 @@ public class Logger implements PropertyChangeListener {
             s = String.format("Sending activity: %s to user %s", evt.getOldValue(), evt.getNewValue());
         }
         if(evt.getPropertyName().equals("New login: ")) {
-            s = String.format("New Login: %s", evt.getNewValue());
+            s = String.format("New login: %s", evt.getNewValue());
         }
         if(evt.getPropertyName().equals("User logged out: ")) {
             s = String.format("User logged out: %s", evt.getNewValue());
@@ -113,7 +113,6 @@ public class Logger implements PropertyChangeListener {
             eventLog.add(currEvent);
             writeToFile();
         }
-
     }
 }
 
