@@ -128,6 +128,11 @@ public class AppPanel extends JPanel {
         onlineList.setVisible(true);
         addOnlineListMouseListener();
 
+        Font timerFont = new Font("SansSerif",Font.BOLD,18);
+        lblTimerInfo.setFont(timerFont);
+        lblTimerInfo.setBorder(BorderFactory.createTitledBorder("Time left:"));
+        lblTimerInfo.setPreferredSize((new Dimension(50,75)));
+
         JScrollPane onlineScrollPane = new JScrollPane(onlineList);
 
         centerPnl.add(onlineScrollPane, BorderLayout.CENTER);
@@ -152,6 +157,9 @@ public class AppPanel extends JPanel {
         });
     }
 
+    /**
+     * Requirement: F.K.2
+     */
     public void showUserChallengeOptions(String usernameToChallenge) {
         SwingUtilities.invokeLater(() -> {
             int response = JOptionPane.showConfirmDialog(null, "Vill du utmana " + usernameToChallenge + "?", "Utmana Användare", JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE);
@@ -163,6 +171,9 @@ public class AppPanel extends JPanel {
         });
     }
 
+    /**
+     * Requirement: F.K.2
+     */
     public void showWaitingWindow() {
             waitingWindow = new JDialog();
             waitingWindow.setTitle("Väntar...");
@@ -179,6 +190,9 @@ public class AppPanel extends JPanel {
             waitingWindow.setVisible(true);
     }
 
+    /**
+     * Requirement: F.K.2
+     */
     public void disposeWaitingWindow() {
         if(waitingWindow != null) {
             waitingWindow.dispose();
@@ -252,9 +266,9 @@ public class AppPanel extends JPanel {
             public void run() {
                 String time;
                 if (secondInterval < 10) {
-                    time = String.format("timer: %d:0%d", minuteInterval, secondInterval);
+                    time = String.format("%d:0%d", minuteInterval, secondInterval);
                 } else {
-                    time = String.format("timer: %d:%d", minuteInterval, secondInterval);
+                    time = String.format("%d:%d", minuteInterval, secondInterval);
                 }
                 lblTimerInfo.setText(time);
                 decreaseInterval();
@@ -315,6 +329,10 @@ public class AppPanel extends JPanel {
         taActivityInfo = new JTextArea();
         taActivityInfo.setBackground(clrPanels);
         taActivityInfo.setPreferredSize(new Dimension(200, 80));
+        taActivityInfo.setBorder(BorderFactory.createTitledBorder("Aktivitetsinformation"));
+        taActivityInfo.setEditable(false);
+        //taActivityInfo.setEnabled(false);
+        taActivityInfo.setFocusable(false);
         taActivityInfo.setLineWrap(true);
         taActivityInfo.setWrapStyleWord(true);
         Font font = new Font("SansSerif", Font.PLAIN, 14);
@@ -343,7 +361,7 @@ public class AppPanel extends JPanel {
                 String newActivityName = splitActivityNameAndTime(activityName);
                 for (Activity activity : activities) {
                     if (activity.getActivityName().equals(newActivityName)) {
-                        showActivityInfo(activity.getActivityInfo());
+                        showActivityInfo(activity.getActivityInfo(), activity.getActivityName());
                     }
                 }
             }
@@ -376,16 +394,17 @@ public class AppPanel extends JPanel {
         startTimer(timerValue - 1, 59);
         activities.add(activity);
 
-        activityListModel.addElement(activity.getActivityName() + " " + activity.getTime());
+        activityListModel.add(0,activity.getActivityName() + " " + activity.getTime());
+
         String newActivityName = splitActivityNameAndTime(activity.getActivityName());
         activity.setActivityName(newActivityName);
-        updateUI();
-
+       // updateUI();
         return activities;
     }
 
-    public void showActivityInfo(String activityInfo) {
-        taActivityInfo.setText(activityInfo);
+    public void showActivityInfo(String activityInfo, String activityName) {
+        String formattedString = String.format("%s\n\n%s", activityName, activityInfo);
+        taActivityInfo.setText(formattedString);
     }
 
     /**
@@ -412,7 +431,7 @@ public class AppPanel extends JPanel {
     }
 
     /**
-     * Requirement: F.A.1, F.A.1.2, F.A.1.3, F.A.2, F.A.3
+     * Requirement: F.A.1, F.A.1.2, F.A.1.3, F.A.2, F.A.3, F.K.2
      * Sends a notification, with sound, to the user, with an activity to perform.
      * Gives the user the option to snooze the activity or confirm it being done.
      *
@@ -458,12 +477,18 @@ public class AppPanel extends JPanel {
         return activities;
     }
 
+    /**
+     * Requirement: F.K.2
+     */
     public boolean showChallengeRequest(User user) {
         String myUsername = mainPanel.getUserName();
             int response = JOptionPane.showConfirmDialog(null, "Du ("+myUsername+") har blivit utmanad av "+ user.getUsername() + ", accepterar du?", "Du har blivit utmanad", JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE);
         return response == JOptionPane.YES_OPTION;
     }
 
+    /**
+     * Requirement: F.K.2
+     */
     public void showChallengeDeniedMessage() {
         JOptionPane.showMessageDialog(null, "Användaren har tackat nej till utmaningen.", "Information", JOptionPane.INFORMATION_MESSAGE);
     }
@@ -476,6 +501,11 @@ public class AppPanel extends JPanel {
         }
     }
 
+    /**
+     * F.O.5
+     *
+     * @param userName
+     */
     public void showOfflineWelcomeMessage(String userName) {
         ImageIcon welcomeIcon = new ImageIcon("imagesClient/exercise.png");
         Image image = welcomeIcon.getImage();
@@ -487,7 +517,11 @@ public class AppPanel extends JPanel {
                 "I offlineläge finns begränsad funktionalitet. \nOm du vill nå denna, testa att logga in igen.", "Välkommen till EDIM  - Offline", 2, new ImageIcon(newImg));
     }
 
-
+    /**
+     * F.P.1.1
+     *
+     * @param userName
+     */
     public void showWelcomeMessage(String userName) {
         ImageIcon welcomeIcon = new ImageIcon("imagesClient/exercise.png");
         Image image = welcomeIcon.getImage();
@@ -519,6 +553,5 @@ public class AppPanel extends JPanel {
             }
         }
     }
-
 
 }

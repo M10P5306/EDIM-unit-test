@@ -1,5 +1,6 @@
 package client;
 
+import client.gui.MainPanel;
 import shared.Activity;
 
 
@@ -24,6 +25,7 @@ public class ClientController {
     private ClientCommunicationController ccc;
     private User user;
     private ActivityRegister activityRegister;
+    private String userToChallenge = null;
 
     /**
      * Constructs a MainFrame and a ClientCommunicationController object. Then calls the method createUser.
@@ -69,6 +71,8 @@ public class ClientController {
 
     /**
      * Sets the UserType to LOGOUT and sends the user object to ClientCommunicationController.
+     *
+     * Requirement: F.P.1.4
      */
     public void logOut() {
         user.setUserType(UserType.LOGOUT);
@@ -80,6 +84,8 @@ public class ClientController {
     /**
      * Requirement: F.O.1
      * Sets the UserType to OFFLINE and instantiates a new ActivityRegister
+     *
+     * Requirement: F.P.1.4
      */
     public void runOffline() {
         user.setUserType(UserType.OFFLINE);
@@ -153,15 +159,18 @@ public class ClientController {
         }
     }
 
-    public void receiveObject(Object object) {
+    public synchronized void receiveObject(Object object) {
         if (object instanceof User) {
             User user = (User) object;
-            receiveUser(user);
+
+            if(user.getUserType() != UserType.SENDCHALLENGEREQUEST) {receiveUser(user);}
+
             if (user.getUserType() == UserType.LOGOUT) {
                 System.out.println("Vi kom in i receiveObject och ville disconnecta från server");
                 ccc.disconnect();
             } else if (user.getUserType() == UserType.SENDCHALLENGEREQUEST) {
                 boolean userAccepts = mainFrame.showChallengeRequest(user);
+                userToChallenge = user.getUsername();
 
                 if(userAccepts) {
                     sendChallengeToBothChallengers();
@@ -186,13 +195,21 @@ public class ClientController {
         }
     }
 
+    /**
+     * Requirement: F.K.2
+     */
     private void sendChallengeDenyMessage() {
         user.setUserType(UserType.CHALLENGEDENIED);
         ccc.sendObject(user);
     }
 
+    /**
+     * Requirement: F.K.2
+     */
     private void sendChallengeToBothChallengers() {
         user.setUserType(UserType.SENDCHALLENGE);
+        user.setUsernameToChallenge(userToChallenge);
+
         ccc.sendObject(user);
         System.out.println("Challenge was accepted");
     }
@@ -229,7 +246,9 @@ public class ClientController {
         return this.user;
     }
 
-
+    /**
+     * Requirement: F.K.2
+     */
     public void sendChallengeRequestToUser(String usernameToChallenge) {
         System.out.println("CHECKPOINT 1 - sending: " + this.user.getUsername());
 
@@ -239,8 +258,8 @@ public class ClientController {
 
         ccc.sendObject(user);
     }
+
     public void setMainFrame(MainFrame mf) {
         this.mainFrame = mf;
     }
-
 }

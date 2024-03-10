@@ -21,6 +21,9 @@ public class Logger implements PropertyChangeListener {
         logServerStart();
     }
 
+    /**
+     * Requirement: F.S.6.1
+     */
     private void loadLogsFromFile() {
         try {
             FileInputStream fis = new FileInputStream("files/log.dat");
@@ -41,6 +44,9 @@ public class Logger implements PropertyChangeListener {
         }
     }
 
+    /**
+     * Requirement: F.S.6.2
+     */
     public LinkedList<LogEvent> searchLogs (LocalDateTime startTime, LocalDateTime endTime) {
         LinkedList<LogEvent> events = new LinkedList<>();
 
@@ -80,6 +86,9 @@ public class Logger implements PropertyChangeListener {
         eventLog.add(currEvent);
     }
 
+    /**
+     * Requirement: F.S.6.1
+     */
     @Override
     public void propertyChange(PropertyChangeEvent evt) {
 

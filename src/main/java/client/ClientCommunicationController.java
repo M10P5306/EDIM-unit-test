@@ -80,21 +80,12 @@ public class ClientCommunicationController {
      * @param object the object to be sent.
      */
 
-    public boolean sendObject(Object object) {
-        String printOut;
-        if(object instanceof User) {
-            printOut = ((User) object).getUsername();
-        } else {
-            printOut = "bajs";
-        }
-
-
+    public synchronized boolean sendObject(Object object) {
         try {
             System.out.println("CHECKPOINT 2");
             if (oos != null) {
                 oos.writeUnshared(object);
                 System.out.println("CHECKPOINT 3");
-                System.out.println("CHECKPOINT OBJECT: " + printOut);
                 oos.flush();
                 return true;
             }
@@ -142,6 +133,7 @@ public class ClientCommunicationController {
                         }
                     }
                     System.out.println("CCC - CR: Mottaget: " + object.getClass()); //TODO: Test - ta bort
+
                     clientController.receiveObject(object);
                 } catch (IOException | ClassNotFoundException | InterruptedException e) {
                     e.printStackTrace();

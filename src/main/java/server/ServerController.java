@@ -38,10 +38,7 @@ public class ServerController {
         this.changeSupport = new PropertyChangeSupport(this);
         log = new Logger(this);
         loggerGUI = new LoggerGUI(this);
-        callSearchLogger(null, null);
-    }
-
-
+        callSearchLogger(null, null);}
     /**
      * Constructs all the buffers and servers and HashMaps that is needed.
      *
@@ -65,6 +62,9 @@ public class ServerController {
         changeSupport.addPropertyChangeListener(pcl);
     }
 
+    /**
+     * Requirement: F.S.6.2
+     */
     public LinkedList<LogEvent> callSearchLogger(LocalDateTime startTime, LocalDateTime endTime) {
         LinkedList<LogEvent> logs = log.searchLogs(startTime, endTime);
         ArrayList<String> formattedStrings = new ArrayList<>();
@@ -78,6 +78,8 @@ public class ServerController {
 
     /**
      * Opens a stream and writes the user objects to the stream and then creates a file.
+     *
+     * Requirement: F.P.1.1
      *
      * @param filename the name of the created file.
      */
@@ -154,22 +156,17 @@ public class ServerController {
      * @param username the received username.
      */
     public synchronized void sendActivity(String username) {
-        User user = userRegister.getUserHashMap().get(username);
         int nbrOfActivities = activityRegister.getActivityRegister().size();
         int activityNbr = rand.nextInt(nbrOfActivities);
-        Activity activityToSend = new Activity();
-        Activity getActivity = activityRegister.getActivityRegister().get(activityNbr);
-        activityToSend.setActivityName(getActivity.getActivityName());
-        activityToSend.setActivityInstruction(getActivity.getActivityInstruction());
-        activityToSend.setActivityInfo(getActivity.getActivityInfo());
+        Activity activityToSend = activityRegister.getActivityRegister().get(activityNbr);
         activityToSend.setActivityUser(username);
-        activityToSend.setActivityImage(getActivity.getActivityImage());
+
         socketHashMap.get(username).sendObject(activityToSend);
         System.out.println("Sending activity: " + activityToSend.getActivityName());  //TODO: Test - ta bort
         changeSupport.firePropertyChange("Sending activity: ", activityToSend.getActivityName(), username);
     }
 
-    public void receiveObject(Object object) {
+    public synchronized void receiveObject(Object object) {
         if (object instanceof User) {
             System.out.println("CHECKPOINT 6");
             User user = (User) object;
@@ -257,10 +254,16 @@ public class ServerController {
 
     }
 
+    /**
+     * Requirement: F.S.3
+     */
     private void sendChallengeDeniedToChallengingUser(User user) {
         socketHashMap.get(user.getUsername()).sendObject(user);
     }
 
+    /**
+     * Requirement: F.S.3
+     */
     private void sendChallengeToUsers(User user) {
         String client1 = user.getUsername();
         String client2 = user.getUsernameToChallenge();
@@ -275,22 +278,18 @@ public class ServerController {
         activity1.setActivityUser(client1);
         activity1.setIsChallenge(true);
 
-        sendActivityToSpecificUser(client1, activity1);
+        socketHashMap.get(client1).sendObject(activity1);
 
         Activity activity2 = activityRegister.getActivityRegister().get(activityNbr);
         activity2.setActivityUser(client2);
         activity2.setIsChallenge(true);
 
-        sendActivityToSpecificUser(client2, activity2);
+        socketHashMap.get(client2).sendObject(activity2);
 
         changeSupport.firePropertyChange("Sending activity: ", activity1.getActivityName(), client1);
         changeSupport.firePropertyChange("Sending activity: ", activity2.getActivityName(), client2);
     }
 
-    public void sendActivityToSpecificUser(String username, Activity activity){
-        System.out.println("sendActivityToSpecificUser, username: " + username);
-        socketHashMap.get(username).sendObject(activity);
-    }
 
     public void addNewConnection(String userName, ConnectionStream connectionStream) {
         socketHashMap.put(userName, connectionStream);
@@ -306,14 +305,16 @@ public class ServerController {
         System.out.println("User logged out: " + username);  //TODO: Test - ta bort
     }
 
+    /**
+     * Requirement: F.S.3
+     */
     public void sendChallengeRequest(User userToSend){
         socketHashMap.get(userToSend.getUsernameToChallenge()).sendObject(userToSend);
-        //changeSupport.firePropertyChange("Sending challenge request to: ", null, userToSend.getUsernameToChallenge());
         System.out.println("Sending challenge request from: " + userToSend.getUsername() + " to: " + userToSend.getUsernameToChallenge());
     }
 
     public PropertyChangeSupport getChangeSupport() {
-        return changeSupport;
+        return this.changeSupport;
     }
 
     public HashMap getSocketHashMap() {

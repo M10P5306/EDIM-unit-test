@@ -52,7 +52,7 @@ public class MainFrame extends JFrame {
      * Sets up the main frame for the GUI.
      */
     public void setupFrame() {
-        setBounds(0, 0, 900, 438);
+        setBounds(0, 0, 842, 420);
         addWindowListener(new WindowAdapter() {
             public void windowClosing(WindowEvent we) {
                 clientController.logOut();
@@ -93,6 +93,8 @@ public class MainFrame extends JFrame {
     }
 
     /**
+     * Requirement: F.P.1.4
+     *
      * Notifies the {@link ClientController} and closes the GUI window.
      */
     public void logOut() {
@@ -103,18 +105,29 @@ public class MainFrame extends JFrame {
 
     /**
      * Displays a new notification in the GUI.
+     *
+     * Requirement: F.A.1
+     *
      * @param activity the received object.
      */
     public void showNotification(Activity activity) {
         mainPanel.getAppPanel().showNotification(activity);
     }
 
+    /**
+     * Requirement: F.S.2
+     *
+     * @param usersOnline
+     */
     public void showUsersOnline(ArrayList<String> usersOnline){
         mainPanel.getAppPanel().displayOnlineList(usersOnline);
     }
 
     /**
      * Sends a received activity object to the {@link ClientController}.
+     *
+     * Requirement: F.A.1
+     *
      * @param activity the received object.
      */
     public void sendActivityFromGUI(Activity activity) {
@@ -123,6 +136,8 @@ public class MainFrame extends JFrame {
 
     /**
      * Sends a welcome message to a new user.
+     *
+     * Requirement: F.P.1.1
      */
     public void sendWelcomeMessage() {
         mainPanel.getAppPanel().showWelcomeMessage(userName);
@@ -130,6 +145,8 @@ public class MainFrame extends JFrame {
 
     /**
      * Sends a welcome message to a new offline user.
+     *
+     * Requirement: F.O.5
      */
     public void sendOfflineWelcomeMessage() {
         mainPanel.getAppPanel().showOfflineWelcomeMessage(userName);
@@ -137,6 +154,9 @@ public class MainFrame extends JFrame {
 
     /**
      * Sends the received interval from the GUI to the {@link ClientController}.
+     *
+     * Requirement: F.A.4
+     *
      * @param interval the integer chosen by the user.
      */
     public void sendChosenInterval(int interval) {
@@ -148,18 +168,30 @@ public class MainFrame extends JFrame {
     }
 
 
+    /**
+     * Requirement: F.K.2
+     */
     public void sendChallengeRequestToUser(String usernameToChallenge) {
         clientController.sendChallengeRequestToUser(usernameToChallenge);
     }
 
+    /**
+     * Requirement: F.K.2
+     */
     public boolean showChallengeRequest(User user) {
         return mainPanel.showChallengeRequest(user);
     }
 
+    /**
+     * Requirement: F.K.2
+     */
     public void disposeWaitingWindow() {
         mainPanel.disposeWaitingWindow();
     }
 
+    /**
+     * Requirement: F.K.2
+     */
     public void showChallengeDeniedMessage() {
         mainPanel.showChallengeDeniedMessage();
     }

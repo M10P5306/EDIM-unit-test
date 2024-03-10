@@ -18,7 +18,6 @@ public class MainPanel extends JPanel {
     private AppPanel appPanel;
     private String userName;
     private Color backGroundColor;
-
     private String title;
 
     public MainPanel(MainFrame mainFrame, String userName, String status) {
@@ -34,12 +33,12 @@ public class MainPanel extends JPanel {
         setSize(new Dimension(819, 438));
         setBackground(backGroundColor);
         TitledBorder tb = BorderFactory.createTitledBorder("Välkommen, " + userName + " - " + status);
-        this.title = tb.getTitle();
         if (status.equals("OFFLINE")) {
             tb.setTitleColor(Color.RED);
         } else {
             tb.setTitleColor(new Color(0x339F02));
         }
+        title = tb.getTitle();
         setBorder(tb);
     }
 
@@ -51,14 +50,23 @@ public class MainPanel extends JPanel {
         return appPanel;
     }
 
+    /**
+     * Requirement: F.P.1.4
+     */
     public void logOut() {
         mainFrame.logOut();
     }
 
+    /**
+     * Requirement: F.A.1
+     */
     public void sendActivityFromGUI(Activity activity) {
         mainFrame.sendActivityFromGUI(activity);
     }
 
+    /**
+     * Requirement: F.A.4
+     */
     public void sendChosenInterval(int interval) {
         mainFrame.sendChosenInterval(interval);
     }
@@ -67,18 +75,30 @@ public class MainPanel extends JPanel {
         return mainFrame;
     }
 
+    /**
+     * Requirement: F.K.2
+     */
     public void sendChallengeRequestToUser(String usernameToChallenge) {
         mainFrame.sendChallengeRequestToUser(usernameToChallenge);
     }
 
+    /**
+     * Requirement: F.K.2
+     */
     public boolean showChallengeRequest(User user) {
         return appPanel.showChallengeRequest(user);
     }
 
+    /**
+     * Requirement: F.K.2
+     */
     public void disposeWaitingWindow() {
         appPanel.disposeWaitingWindow();
     }
 
+    /**
+     * Requirement: F.K.2
+     */
     public void showChallengeDeniedMessage() {
         appPanel.showChallengeDeniedMessage();
     }

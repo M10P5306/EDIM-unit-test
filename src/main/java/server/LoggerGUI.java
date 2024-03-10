@@ -54,6 +54,9 @@ public class LoggerGUI extends JFrame implements PropertyChangeListener {
         controller.addListener(this);
     }
 
+    /**
+     * Requirement: F.S.6
+     */
     private JPanel labelPanel(){
         JLabel logLabel = new JLabel("Log: ");
         logLabel.setPreferredSize(new Dimension(width, 50));
@@ -71,6 +74,10 @@ public class LoggerGUI extends JFrame implements PropertyChangeListener {
 
         return jPanel;
     }
+
+    /**
+     * Requirement: F.S.6
+     */
     private JScrollPane logListPanel() {
 
         this.logList = new JList<>();
@@ -103,7 +110,9 @@ public class LoggerGUI extends JFrame implements PropertyChangeListener {
         return scrollPane;
     }
 
-
+    /**
+     * Requirement: F.S.6
+     */
     private JPanel loggerInputs() {
         JPanel inputs = new JPanel();
         inputs.setLayout(new GridLayout(1, 3));
@@ -217,9 +226,8 @@ public class LoggerGUI extends JFrame implements PropertyChangeListener {
         }
     }
 
-    public DefaultListModel<String> getDefaultListModel() {
-        return defaultListModel;
+    public DefaultListModel getDefaultListModel() {
+        return this.defaultListModel;
     }
-
 }
 

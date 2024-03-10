@@ -35,7 +35,7 @@ public class ConnectionStream extends Thread {
     }
 
 
-    public boolean sendObject(Object object) {
+    public synchronized boolean sendObject(Object object) {
         try {
             oos.writeUnshared(object);
             oos.flush();
